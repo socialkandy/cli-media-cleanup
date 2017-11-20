@@ -17,7 +17,7 @@ class Media_Cleanup_Command {
 	 * [--missing-files]
 	 * : Clean attachments withour an file.
 	 *
-	 * * [--dry-run]
+	 * [--dry-run]
 	 * : Checks how many entries will be deleted
 	 *
 	 * @when after_wp_load
