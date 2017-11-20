@@ -1,8 +1,8 @@
 {
-    "name": "proxio/media-cleanup",
+    "name": "socialkandy/wp-cli-media-cleanup",
     "description": "",
     "type": "wp-cli-package",
-    "homepage": "https://github.com/proxio/media-cleanup",
+    "homepage": "https://github.com/socialkandy/wp-cli-media-cleanup",
     "license": "MIT",
     "authors": [],
     "minimum-stability": "dev",
