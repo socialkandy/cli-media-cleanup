@@ -12,10 +12,10 @@ class Media_Cleanup_Command {
 	 * Cleanup unused medias.
 	 *
 	 * [--missing-attachments]
-	 * : Clean files without an attachment.
+	 * : Clean files with no attachment.
 	 *
 	 * [--missing-files]
-	 * : Clean attachments withour an file.
+	 * : Clean attachments with no file.
 	 *
 	 * [--dry-run]
 	 * : Checks how many entries will be deleted
@@ -23,15 +23,21 @@ class Media_Cleanup_Command {
 	 * @when after_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		if ( $assoc_args['dry-run'] ) {
-			WP_CLI::line( count( $this->get_attachments_missing_files() ) );
-		} else {
-			WP_CLI::success( 'Command running' );
+		if ( empty( $assoc_args ) ) {
+			WP_CLI::line( 'usage: wp media cleanup [--dry-run] [--missing-files] [--missing-attachments]' );
+		}
+
+		if ( isset( $assoc_args['dry-run'] ) ) {
+			$attachments_count = count( $this->get_attachments_missing_files() );
+			$files_count       = count( $this->get_files_missing_attachments() );
+
+			WP_CLI::line( sprintf( 'There are %d empty attachments to clean.', $attachments_count ) );
+			WP_CLI::line( sprintf( 'There are %d files with no attachment to clean.', $files_count ) );
 		}
 	}
 
 	/**
-	 * Gets attachments IDs that are missing files.
+	 * Get all attachments IDs that are missing files.
 	 */
 	private function get_attachments_missing_files() {
 		$missing_files = array();
@@ -49,6 +55,17 @@ class Media_Cleanup_Command {
 		}
 
 		return $missing_files;
+	}
+
+	/**
+	 * Get all files that have no attachments.
+	 */
+	private function get_files_missing_attachments() {
+		return array(
+			'/path/to/wp-content/file-1.jpg',
+			'/path/to/wp-content/file-2.jpg',
+			'/path/to/wp-content/file-3.jpg',
+		);
 	}
 }
 WP_CLI::add_command( 'media cleanup', 'Media_Cleanup_Command' );
