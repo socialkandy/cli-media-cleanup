@@ -9,6 +9,13 @@ if ( ! class_exists( 'WP_CLI' ) ) {
  */
 class Media_Cleanup_Command {
 	/**
+	 * All attachments in current installation.
+	 *
+	 * @var array.
+	 */
+	private $attachments;
+
+	/**
 	 * Cleanup unused medias.
 	 *
 	 * [--missing-attachments]
@@ -24,15 +31,22 @@ class Media_Cleanup_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		if ( empty( $assoc_args ) ) {
-			WP_CLI::line( 'usage: wp media cleanup [--dry-run] [--missing-files] [--missing-attachments]' );
+			WP_CLI::log( 'usage: wp media cleanup [--dry-run] [--missing-files] [--missing-attachments]' );
+		}
+
+		if ( empty( $this->attachments ) ) {
+			$this->attachments = get_posts( array(
+				'post_type'      => 'attachment',
+				'posts_per_page' => -1,
+			) );
 		}
 
 		if ( isset( $assoc_args['dry-run'] ) ) {
 			$attachments_count = count( $this->get_attachments_missing_files() );
-			$files_count       = count( $this->get_files_missing_attachments() );
+			WP_CLI::log( sprintf( 'There are %d empty attachments to clean.', $attachments_count ) );
 
-			WP_CLI::line( sprintf( 'There are %d empty attachments to clean.', $attachments_count ) );
-			WP_CLI::line( sprintf( 'There are %d files with no attachment to clean.', $files_count ) );
+			$files_count       = count( $this->get_files_missing_attachments() );
+			WP_CLI::log( sprintf( 'There are %d files with no attachment to clean.', $files_count ) );
 		}
 	}
 
@@ -41,12 +55,10 @@ class Media_Cleanup_Command {
 	 */
 	private function get_attachments_missing_files() {
 		$missing_files = array();
-		$attachments   = get_posts( array(
-			'post_type'      => 'attachment',
-			'posts_per_page' => -1,
-		) );
 
-		foreach ( $attachments as $attachment ) {
+		WP_CLI::log( 'Scanning attachments...' );
+
+		foreach ( $this->attachments as $attachment ) {
 			$attached_file = get_attached_file( $attachment->ID );
 
 			if ( ! file_exists( $attached_file ) ) {
@@ -61,11 +73,42 @@ class Media_Cleanup_Command {
 	 * Get all files that have no attachments.
 	 */
 	private function get_files_missing_attachments() {
-		return array(
-			'/path/to/wp-content/file-1.jpg',
-			'/path/to/wp-content/file-2.jpg',
-			'/path/to/wp-content/file-3.jpg',
-		);
+		global $wpdb;
+
+		$missing_attachments = array();
+		$uploads             = wp_upload_dir();
+		$path                = trailingslashit( $uploads['basedir'] );
+
+		WP_CLI::log( 'Scanning uploads folder: ' . $path );
+
+		$iterator = new RecursiveDirectoryIterator( $path, FilesystemIterator::SKIP_DOTS );
+		$files    = iterator_to_array( new RecursiveIteratorIterator( $iterator ) );
+		$count    = 0;
+
+		WP_CLI::log( sprintf( 'There are %d files in total.', count( $files ) ) );
+
+		foreach ( $files as $filepath => $file ) {
+			// Relative path to uploads folder.
+			$filename      = basename( $filepath );
+			$relative_path = _wp_relative_upload_path( $filepath );
+
+			// If it's not a hidden file.
+			if ( strpos( $filename, '.' ) !== 0 ) {
+				/**
+				 * @todo Make this query look for meta_key = '_wp_attachment_metadata' AND meta_value LIKE '$relative_path'
+				 */
+				$sql = $wpdb->get_results( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = '$relative_path'" );
+
+				if ( $sql ) {
+					$count++;
+					unset( $files[ $filepath ] );
+				}
+			}
+		}
+
+		WP_CLI::log( sprintf( 'There are %d files with valid attachments.', $count ) );
+
+		return $files;
 	}
 }
 WP_CLI::add_command( 'media cleanup', 'Media_Cleanup_Command' );
