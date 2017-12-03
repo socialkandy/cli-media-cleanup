@@ -5,7 +5,19 @@ if ( ! class_exists( 'WP_CLI' ) ) {
 }
 
 /**
- * Implements Media Cleanup Command.
+ * Cleanup invalid files and attachments.
+ *
+ * ## EXAMPLES
+ *
+ *     # Cleanup all invalid files and attachments.
+ *     $ wp media cleanup
+ *     Success: All invalid files and attachments clean.
+ *
+ *     # Cleanup all invalid attachments.
+ *     $ wp media cleanup --attachments-only
+ *     Success: All invalid attachments clean.
+ *
+ * @package wp-cli
  */
 class Media_Cleanup_Command {
 	/**
@@ -16,22 +28,22 @@ class Media_Cleanup_Command {
 	private $attachments;
 
 	/**
-	 * Cleanup unused medias.
-	 *
-	 * [--missing-attachments]
-	 * : Clean files with no attachment.
-	 *
-	 * [--missing-files]
-	 * : Clean attachments with no file.
+	 * Delete files with no attachments and attachments with no file.
 	 *
 	 * [--dry-run]
 	 * : Checks how many entries will be deleted
+	 *
+	 * [--attachments-only]
+	 * : Clean files with no existing attachment.
+	 *
+	 * [--files-only]
+	 * : Clean attachments with no existing file.
 	 *
 	 * @when after_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		if ( empty( $assoc_args ) ) {
-			WP_CLI::log( 'usage: wp media cleanup [--dry-run] [--missing-files] [--missing-attachments]' );
+			WP_CLI::log( 'usage: wp media cleanup [--dry-run] [--files-only] [--attachments-only]' );
 		}
 
 		if ( empty( $this->attachments ) ) {
