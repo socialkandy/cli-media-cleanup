@@ -54,11 +54,8 @@ class Media_Cleanup_Command {
 		}
 
 		if ( isset( $assoc_args['dry-run'] ) ) {
-			$attachments_count = count( $this->get_attachments_missing_files() );
-			WP_CLI::log( sprintf( 'There are %d empty attachments to clean.', $attachments_count ) );
-
-			$files_count       = count( $this->get_files_missing_attachments() );
-			WP_CLI::log( sprintf( 'There are %d files with no attachment to clean.', $files_count ) );
+			$attachments = $this->get_attachments_missing_files();
+			$files       = $this->get_files_missing_attachments();
 		}
 	}
 
@@ -78,6 +75,8 @@ class Media_Cleanup_Command {
 			}
 		}
 
+		WP_CLI::log( sprintf( 'There are %d empty attachments to clean.', count( $missing_files ) ) );
+
 		return $missing_files;
 	}
 
@@ -93,9 +92,9 @@ class Media_Cleanup_Command {
 
 		WP_CLI::log( 'Scanning uploads folder: ' . $path );
 
-		$iterator = new RecursiveDirectoryIterator( $path, FilesystemIterator::SKIP_DOTS );
-		$files    = iterator_to_array( new RecursiveIteratorIterator( $iterator ) );
-		$count    = 0;
+		$iterator    = new RecursiveDirectoryIterator( $path, FilesystemIterator::SKIP_DOTS );
+		$files       = iterator_to_array( new RecursiveIteratorIterator( $iterator ) );
+		$valid_files = 0;
 
 		WP_CLI::log( sprintf( 'There are %d files in total.', count( $files ) ) );
 
@@ -112,13 +111,14 @@ class Media_Cleanup_Command {
 				$sql = $wpdb->get_results( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = '$relative_path'" );
 
 				if ( $sql ) {
-					$count++;
+					$valid_files++;
 					unset( $files[ $filepath ] );
 				}
 			}
 		}
 
-		WP_CLI::log( sprintf( 'There are %d files with valid attachments.', $count ) );
+		WP_CLI::log( sprintf( 'There are %d files with valid attachments.', $valid_files ) );
+		WP_CLI::log( sprintf( 'There are %d files with no attachment to clean.', count( $files ) ) );
 
 		return $files;
 	}
