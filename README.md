@@ -9,7 +9,50 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 
 ## Using
 
+This package implements the following commands:
 
+### wp media cleanup
+
+Cleanup all invalid attachments and files.
+
+~~~
+wp media cleanup [--dry-run] [--files-only] [--attachments-only]
+~~~
+
+Scans wp-uploads folder and find any reference for attachments in database and vice-versa.
+
+**OPTIONS**
+
+	[--dry-run]
+		Only search and analyze, but won't delete anything.
+	[--files-only]
+		Search and delete only invalid files.
+	[--attachments-only]
+		Search and delete only invalid attachments.
+
+**EXAMPLES**
+
+    $ wp media cleanup
+    Scanning attachments...
+	You have 12 attachments with no file associated.
+	Are you sure you want to delete 12 invalid attachments? [y/n] y
+	Success: Deleted 12 invalid attachments.
+	Scanning uploads folder: /srv/www/cb-int.com/current/web/app/uploads/
+	You have 230 files in total.
+	There are 158 files with valid attachments.
+	There are 72 files with no attachment associated.
+	Are you sure you want to delete 72 invalid files? [y/n] y
+	Success: Deleted 72 invalid files.
+
+	$ wp media cleanup --attachments-only --dry-run
+	Scanning attachments...
+	You have 12 attachments with no file associated.
+
+	$ wp media cleanup --attachments-only
+	Scanning attachments...
+	You have 12 attachments with no file associated.
+	Are you sure you want to delete 12 invalid attachments? [y/n] y
+	Success: Deleted 12 invalid attachments.
 
 ## Installing
 
