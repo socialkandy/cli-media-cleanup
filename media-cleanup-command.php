@@ -11,11 +11,24 @@ if ( ! class_exists( 'WP_CLI' ) ) {
  *
  *     # Cleanup all invalid files and attachments.
  *     $ wp media cleanup
- *     Success: All invalid files and attachments clean.
+ *     Scanning attachments...
+ *     You have 12 attachments with no file associated.
+ *     Are you sure you want to delete 12 invalid attachments? [y/n] y
+ *     Success: Deleted 12 invalid attachments.
+ *     Scanning uploads folder: /srv/www/cb-int.com/current/web/app/uploads/
+ *     You have 230 files in total.
+ *     There are 158 files with valid attachments.
+ *     There are 72 files with no attachment associated.
+ *     Are you sure you want to delete 72 invalid files? [y/n] y
+ *     Success: Deleted 72 invalid files.
+
  *
- *     # Cleanup all invalid attachments.
+ *     # Cleanup only invalid attachments.
  *     $ wp media cleanup --attachments-only
- *     Success: All invalid attachments clean.
+ *     Scanning attachments...
+ *     You have 12 attachments with no file associated.
+ *     Are you sure you want to delete 12 invalid attachments? [y/n] y
+ *     Success: Deleted 12 invalid attachments.
  *
  * @package wp-cli
  */
@@ -26,10 +39,10 @@ class Media_Cleanup_Command {
 	 * [--dry-run]
 	 * : Checks how many entries will be deleted
 	 *
-	 * [--attachments-only]
+	 * [--files-only]
 	 * : Clean files with no existing attachment.
 	 *
-	 * [--files-only]
+	 * [--attachments-only]
 	 * : Clean attachments with no existing file.
 	 *
 	 * @when after_wp_load
@@ -44,7 +57,7 @@ class Media_Cleanup_Command {
 
 			if ( ! isset( $assoc_args['dry-run'] ) ) {
 				WP_CLI::confirm( sprintf( 'Are you sure you want to delete %d invalid attachments?', count( $attachments ) ), $assoc_args );
-				// $this->delete_attachments( $attachments );
+				$this->delete_attachments( $attachments );
 			}
 		}
 
@@ -163,6 +176,24 @@ class Media_Cleanup_Command {
 		}
 
 		WP_CLI::success( sprintf( 'Deleted %s invalid files.', $count ) );
+	}
+
+	/**
+	 * Delete given attachments.
+	 *
+	 * @param  array $attachments List of attachments to delete.
+	 * @return void
+	 */
+	private function delete_attachments( $attachments ) {
+		$count = 0;
+
+		foreach ( $attachments as $attachment_id ) {
+			// Forces complete deletion.
+			wp_delete_attachment( $attachment_id, true );
+			$count++;
+		}
+
+		WP_CLI::success( sprintf( 'Deleted %s invalid attachments.', $count ) );
 	}
 }
 WP_CLI::add_command( 'media cleanup', 'Media_Cleanup_Command' );
