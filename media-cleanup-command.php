@@ -103,16 +103,27 @@ class Media_Cleanup_Command {
 
 		foreach ( $files as $filepath => $file ) {
 			// Relative path to uploads folder.
-			$filename      = basename( $filepath );
+			$filename      = '%' . basename( $filepath ) . '%';
 			$relative_path = _wp_relative_upload_path( $filepath );
 
 			// If it's not a hidden file.
 			if ( strpos( $filename, '.' ) !== 0 ) {
-				/**
-				 * @todo Make this query look for meta_key = '_wp_attachment_metadata' AND meta_value LIKE '$relative_path'
-				 */
-				$sql = $wpdb->get_results( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = '$relative_path'" );
 
+				// Search by any occurence of filename in attachments metafields.
+				$sql = $wpdb->get_results( $wpdb->prepare( "
+					SELECT
+						post_id
+					FROM
+						$wpdb->postmeta
+					WHERE
+						(meta_key = '_wp_attached_file'
+						AND meta_value = '%s')
+						OR
+						(meta_key = '_wp_attachment_metadata'
+						AND meta_value LIKE '%s')
+				", $relative_path, $filename ) );
+
+				// If something were found, count as valid file and remove it from list.
 				if ( $sql ) {
 					$valid_files++;
 					unset( $files[ $filepath ] );
