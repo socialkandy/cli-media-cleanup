@@ -78,7 +78,7 @@ class Media_Cleanup_Command {
 			}
 		}
 
-		WP_CLI::log( sprintf( 'There are %d empty attachments to clean.', count( $missing_files ) ) );
+		WP_CLI::log( sprintf( 'You have %d attachments with no file associated.', count( $missing_files ) ) );
 
 		return $missing_files;
 	}
@@ -99,7 +99,7 @@ class Media_Cleanup_Command {
 		$files       = iterator_to_array( new RecursiveIteratorIterator( $iterator ) );
 		$valid_files = 0;
 
-		WP_CLI::log( sprintf( 'There are %d files in total.', count( $files ) ) );
+		WP_CLI::log( sprintf( 'You have %d files in total.', count( $files ) ) );
 
 		foreach ( $files as $filepath => $file ) {
 			// Relative path to uploads folder.
@@ -121,7 +121,7 @@ class Media_Cleanup_Command {
 		}
 
 		WP_CLI::log( sprintf( 'There are %d files with valid attachments.', $valid_files ) );
-		WP_CLI::log( sprintf( 'There are %d files with no attachment to clean.', count( $files ) ) );
+		WP_CLI::log( sprintf( 'There are %d files with no attachment associated.', count( $files ) ) );
 
 		return $files;
 	}
