@@ -13,13 +13,13 @@ This package implements the following commands:
 
 ### wp media cleanup
 
-Cleanup all invalid attachments and files.
+Clean all invalid attachments and files from your site.
 
 ~~~
 wp media cleanup [--dry-run] [--files-only] [--attachments-only]
 ~~~
 
-Scans wp-uploads folder and find any reference for attachments in database and vice-versa.
+Analyzes all files in your `wp-uploads` folder looking for references in attachments metadata. And it also checks if all attachments files exists.
 
 **OPTIONS**
 
