@@ -53,7 +53,7 @@ class Media_Cleanup_Command {
 
 			if ( ! isset( $assoc_args['dry-run'] ) ) {
 				WP_CLI::confirm( sprintf( 'Are you sure you want to delete %d invalid files?', count( $files ) ), $assoc_args );
-				// $this->delete_files( $files );
+				$this->delete_files( $files );
 			}
 		}
 	}
@@ -135,6 +135,34 @@ class Media_Cleanup_Command {
 		WP_CLI::log( sprintf( 'There are %d files with no attachment associated.', count( $files ) ) );
 
 		return $files;
+	}
+
+	/**
+	 * Delete given files.
+	 *
+	 * @param  array $files List of files to delete.
+	 * @return void
+	 */
+	private function delete_files( $files ) {
+		$count = 0;
+		if ( ! empty( $files ) ) {
+			foreach ( $files as $file ) {
+				if ( file_exists( $file ) ) {
+					$delete = unlink( $file );
+
+					if ( ! $delete ) {
+						WP_CLI::warning( sprintf( 'Could not delete file: %s', $file ) );
+						continue;
+					} else {
+						$count++;
+					}
+				} else {
+					WP_CLI::warning( sprintf( 'File not exists: %s', $file ) );
+				}
+			}
+		}
+
+		WP_CLI::success( sprintf( 'Deleted %s invalid files.', $count ) );
 	}
 }
 WP_CLI::add_command( 'media cleanup', 'Media_Cleanup_Command' );
