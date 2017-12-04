@@ -35,20 +35,33 @@ class Media_Cleanup_Command {
 	 * @when after_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		if ( empty( $assoc_args ) ) {
-			WP_CLI::log( 'usage: wp media cleanup [--dry-run] [--files-only] [--attachments-only]' );
+		if ( isset( $assoc_args['attachments-only'], $assoc_args['files-only'] ) ) {
+			WP_CLI::error( 'Use just \'wp media cleanup\' instead.' );
 		}
 
-		if ( isset( $assoc_args['dry-run'] ) ) {
-			$attachments = $this->get_attachments_missing_files();
-			$files       = $this->get_files_missing_attachments();
+		if ( ! isset( $assoc_args['files-only'] ) ) {
+			$attachments = $this->get_invalid_attachments();
+
+			if ( ! isset( $assoc_args['dry-run'] ) ) {
+				WP_CLI::confirm( sprintf( 'Are you sure you want to delete %d invalid attachments?', count( $attachments ) ), $assoc_args );
+				// $this->delete_attachments( $attachments );
+			}
+		}
+
+		if ( ! isset( $assoc_args['attachments-only'] ) ) {
+			$files = $this->get_invalid_files();
+
+			if ( ! isset( $assoc_args['dry-run'] ) ) {
+				WP_CLI::confirm( sprintf( 'Are you sure you want to delete %d invalid files?', count( $files ) ), $assoc_args );
+				// $this->delete_files( $files );
+			}
 		}
 	}
 
 	/**
 	 * Get all attachments IDs that are missing files.
 	 */
-	private function get_attachments_missing_files() {
+	private function get_invalid_attachments() {
 		WP_CLI::log( 'Scanning attachments...' );
 
 		$missing_files = array();
@@ -73,7 +86,7 @@ class Media_Cleanup_Command {
 	/**
 	 * Get all files that have no attachments.
 	 */
-	private function get_files_missing_attachments() {
+	private function get_invalid_files() {
 		global $wpdb;
 
 		$missing_attachments = array();
