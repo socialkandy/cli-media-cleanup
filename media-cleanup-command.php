@@ -21,13 +21,6 @@ if ( ! class_exists( 'WP_CLI' ) ) {
  */
 class Media_Cleanup_Command {
 	/**
-	 * All attachments in current installation.
-	 *
-	 * @var array.
-	 */
-	private $attachments;
-
-	/**
 	 * Delete files with no attachments and attachments with no file.
 	 *
 	 * [--dry-run]
@@ -46,13 +39,6 @@ class Media_Cleanup_Command {
 			WP_CLI::log( 'usage: wp media cleanup [--dry-run] [--files-only] [--attachments-only]' );
 		}
 
-		if ( empty( $this->attachments ) ) {
-			$this->attachments = get_posts( array(
-				'post_type'      => 'attachment',
-				'posts_per_page' => -1,
-			) );
-		}
-
 		if ( isset( $assoc_args['dry-run'] ) ) {
 			$attachments = $this->get_attachments_missing_files();
 			$files       = $this->get_files_missing_attachments();
@@ -63,11 +49,15 @@ class Media_Cleanup_Command {
 	 * Get all attachments IDs that are missing files.
 	 */
 	private function get_attachments_missing_files() {
-		$missing_files = array();
-
 		WP_CLI::log( 'Scanning attachments...' );
 
-		foreach ( $this->attachments as $attachment ) {
+		$missing_files = array();
+		$attachments   = get_posts( array(
+			'post_type'      => 'attachment',
+			'posts_per_page' => -1,
+		) );
+
+		foreach ( $attachments as $attachment ) {
 			$attached_file = get_attached_file( $attachment->ID );
 
 			if ( ! file_exists( $attached_file ) ) {
