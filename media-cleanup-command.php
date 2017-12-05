@@ -45,6 +45,9 @@ class Media_Cleanup_Command {
 	 * [--attachments-only]
 	 * : Clean attachments with no existing file.
 	 *
+	 * [--yes]
+	 * : Answer yes to confirmation messages.
+	 *
 	 * @when after_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
