@@ -90,6 +90,7 @@ class Media_Cleanup_Command {
 			$attached_file = get_attached_file( $attachment->ID );
 
 			if ( ! file_exists( $attached_file ) ) {
+				WP_CLI::log( sprintf( 'No file found for attachment #%s', $attachment->ID ) );
 				$missing_files[] = $attachment->ID;
 			}
 		}
@@ -143,6 +144,8 @@ class Media_Cleanup_Command {
 				if ( $sql ) {
 					$valid_files++;
 					unset( $files[ $filepath ] );
+				} else {
+					WP_CLI::log( sprintf( 'No attachment found for %s', $relative_path ) );
 				}
 			}
 		}
