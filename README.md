@@ -34,13 +34,21 @@ Analyzes all files in your `wp-uploads` folder looking for references in attachm
 
 **EXAMPLES**
 
-    $ wp media cleanup
-    Scanning attachments...
+	$ wp media cleanup
+	Scanning attachments...
+	No file found for attachment #1
+	No file found for attachment #2
+	...
+	No file found for attachment #12
 	You have 12 attachments with no file associated.
 	Are you sure you want to delete 12 invalid attachments? [y/n] y
 	Success: Deleted 12 invalid attachments.
-	Scanning uploads folder: /srv/www/cb-int.com/current/web/app/uploads/
+	Scanning uploads folder: /srv/www/site/wp-content/uploads/
 	You have 230 files in total.
+	No attachment found for 2018/01/file-01.jpg
+	No attachment found for 2018/01/file-02.jpg
+	...
+	No attachment found for other/folder/file-72.jpg
 	There are 158 files with valid attachments.
 	There are 72 files with no attachment associated.
 	Are you sure you want to delete 72 invalid files? [y/n] y
@@ -48,10 +56,18 @@ Analyzes all files in your `wp-uploads` folder looking for references in attachm
 
 	$ wp media cleanup --attachments-only --dry-run
 	Scanning attachments...
+	No file found for attachment #1
+	No file found for attachment #2
+	...
+	No file found for attachment #12
 	You have 12 attachments with no file associated.
 
 	$ wp media cleanup --attachments-only --yes
 	Scanning attachments...
+	No file found for attachment #1
+	No file found for attachment #2
+	...
+	No file found for attachment #12
 	You have 12 attachments with no file associated.
 	Success: Deleted 12 invalid attachments.
 
